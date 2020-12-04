@@ -1,7 +1,4 @@
-// Note: Uses an atomic to decrement nprod.
 #include <condition_variable>
-#include <cstddef>
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <mutex>
@@ -35,7 +32,8 @@ public:
             unique_lock<mutex> q2lck(q2_sync);
             //wait until something to process
             q2_cond.wait(q2lck, []() { return !q2.empty() || !nfilter; });
-            if (q2.empty() && !nfilter) break;
+            if (q2.empty() && !nfilter)
+                break;
             //write to file
             auto x = q2.front();
             if (x % 10 == (int)threadNum)
@@ -57,9 +55,11 @@ public:
             unique_lock<mutex> qlck(q_sync);
             // Wait for queue to have something to process
             q_cond.wait(qlck, []() { return !q.empty() || !nprod; }); // if q is empty wait
-            if (q.empty() && !nprod) break;                                // exit condition
+            if (q.empty() && !nprod)
+                break; // exit condition
             auto x = q.front();
-            if (x % 3 == 0) q.pop(); // remove if multiple of 3
+            if (x % 3 == 0)
+                q.pop(); // remove if multiple of 3
             else
             {
                 q.pop();
@@ -122,6 +122,7 @@ int main()
         c.join();
     for (auto &c : printers)
         c.join();
+
     // auto stop = chrono::high_resolution_clock::now();
     // cout << chrono::duration<double>(stop - start).count() << endl;
 }
