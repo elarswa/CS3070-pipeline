@@ -7,6 +7,7 @@
 #include <thread>
 #include <sstream>
 using namespace std;
+#define NUM_PER_THREAD 1000
 
 class Pipeline
 {
@@ -73,15 +74,13 @@ public:
         }
         --nfilter;
         q2_cond.notify_all();
-        lock_guard<mutex> plck(print);
-        cout << "Filter Thread finished" << endl;
     }
 
     static void produce(int i)
     {
         // Generate 1000 random ints
         srand(time(nullptr) + i * (i + 1));
-        for (int i = 0; i < 1000; ++i)
+        for (int i = 0; i < NUM_PER_THREAD; ++i)
         {
             int n = rand(); // Get random int
             // Get lock for queue; push int
@@ -93,8 +92,6 @@ public:
         // Notify consumers that a producer has shut down
         --nprod;
         q_cond.notify_all();
-        lock_guard<mutex> plck(print);
-        cout << "Producer Thread finished" << endl;
     }
 };
 // Define static class data members
@@ -120,15 +117,11 @@ int main()
     for (auto &p : prods)
         p.join();
 
-    cout << "Prods joined" << endl;
     for (auto &c : cons)
         c.join();
 
-    cout << "Cons joined" << endl;
     for (auto &c : printers)
         c.join();
-
-    cout << "Printers joined" << endl;
 
     // auto stop = chrono::high_resolution_clock::now();
     // cout << chrono::duration<double>(stop - start).count() << endl;
