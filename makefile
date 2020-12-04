@@ -1,6 +1,6 @@
 GPP=g++
-FLAGS=-Wall -Werror -pthread --std=c++17
-DFLAGS=-g -Wall -Werror -pthread --std=c++17
+FLAGS=-Wall -Werror -lpthread --std=c++17
+DFLAGS=-g -Wall -Werror -lpthread --std=c++17
 
 
 build:

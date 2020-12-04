@@ -1,4 +1,5 @@
 #include <condition_variable>
+#include <atomic>
 #include <fstream>
 #include <iostream>
 #include <mutex>
@@ -13,8 +14,8 @@ class Pipeline
     static queue<int> q2; //filtered queue
     static condition_variable q_cond, q2_cond;
     static mutex q_sync, q2_sync, print;
-    static size_t nprod;
-    static size_t nfilter;
+    static atomic_size_t nprod;
+    static atomic_size_t nfilter;
     static ofstream output;
 
 public:
@@ -72,8 +73,8 @@ public:
         }
         --nfilter;
         q2_cond.notify_all();
-        // lock_guard<mutex> plck(print);
-        // cout << "Filter Thread finished" << endl;
+        lock_guard<mutex> plck(print);
+        cout << "Filter Thread finished" << endl;
     }
 
     static void produce(int i)
@@ -92,8 +93,8 @@ public:
         // Notify consumers that a producer has shut down
         --nprod;
         q_cond.notify_all();
-        // lock_guard<mutex> plck(print);
-        // cout << "Producer Thread finished" << endl;
+        lock_guard<mutex> plck(print);
+        cout << "Producer Thread finished" << endl;
     }
 };
 // Define static class data members
@@ -101,8 +102,8 @@ queue<int> Pipeline::q;
 queue<int> Pipeline::q2; //filtered queue
 condition_variable Pipeline::q_cond, Pipeline::q2_cond;
 mutex Pipeline::q_sync, Pipeline::q2_sync, Pipeline::print;
-size_t Pipeline::nprod(nprods);
-size_t Pipeline::nfilter(nfilter3s);
+atomic_size_t Pipeline::nprod(nprods);
+atomic_size_t Pipeline::nfilter(nfilter3s);
 
 int main()
 {
@@ -118,10 +119,16 @@ int main()
     // Join all threads
     for (auto &p : prods)
         p.join();
+
+    cout << "Prods joined" << endl;
     for (auto &c : cons)
         c.join();
+
+    cout << "Cons joined" << endl;
     for (auto &c : printers)
         c.join();
+
+    cout << "Printers joined" << endl;
 
     // auto stop = chrono::high_resolution_clock::now();
     // cout << chrono::duration<double>(stop - start).count() << endl;
